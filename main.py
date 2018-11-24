@@ -30,10 +30,10 @@ def ask_question(data):
             wants_to_play = 'no'
             leave_game(wants_to_play)
         elif fuzz.ratio(answer.lower(), item['capital'].lower()) > 90:
-            print("Well done! That is correct.")
+            print("Well done! That is correct.\n")
             correct_answers += 1
         else:
-            print("Sorry, the correct answer is {}".format(item['capital']))
+            print("Sorry, the correct answer is {}\n".format(item['capital']))
     
     return correct_answers, total_questions
         
