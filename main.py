@@ -3,17 +3,6 @@ import sys
 import random
 from fuzzywuzzy import fuzz
 
-def check_if_user_wants_to_play():
-    wants_to_play = input()
-    while wants_to_play.lower() not in ['yes', 'no']:
-        wants_to_play = input("Sorry that is not a valid option. Please choose 'yes' or 'no'\n")
-    return wants_to_play
-
-def leave_game(wants_to_play):
-    print("'\nThat's too bad. Come back when you are ready to play.'")
-    print('\nBye!')
-    sys.exit()
-
 def check_valid_continent(continent, continents):
     while continent.capitalize() not in continents:
         continent = input("Sorry that is not a valid response. Please choose one of the follwoing continents: \n{}\n\n".format('\n'.join(continents)))
@@ -25,15 +14,16 @@ def ask_question(data):
     random.shuffle(data)
        
     for item in data:
-        answer = input('What is the capital city of {}\n'.format(item['name']))
-        if answer.lower() == 'quit':
-            wants_to_play = 'no'
-            leave_game(wants_to_play)
-        elif fuzz.ratio(answer.lower(), item['capital'].lower()) > 90:
-            print("Well done! That is correct.\n")
-            correct_answers += 1
-        else:
-            print("Sorry, the correct answer is {}\n".format(item['capital']))
+        if len(item['capital'])>1:
+            answer = input('What is the capital city of {}\n'.format(item['name']))
+            if fuzz.ratio(answer.lower(), item['capital'].lower()) != 100 and fuzz.ratio(answer.lower(), item['capital'].lower())> 90:
+                print(f"Hmmm I'll give you this one, but the correct spelling is {item['capital']}.\n")
+                correct_answers += 1
+            elif fuzz.ratio(answer.lower(), item['capital'].lower())> 90:
+                print("Well done! That is correct.\n")
+                correct_answers += 1
+            else:
+                print("Sorry, the correct answer is {}\n".format(item['capital']))
     
     return correct_answers, total_questions
         
@@ -59,28 +49,27 @@ def score_the_game(correct_answers, total_questions):
         print('Looks like you need a little more practice.') 
 
 def play_again():
-    wants_to_play = input("Do you want to play again? Please enter 'Yes' or 'No'\n")
+    play_again = input("Do you want to play again? Please enter 'Y' or 'N'\n")
     
-    while wants_to_play.lower() not in ['yes', 'no']:
-        wants_to_play = input("Please type 'yes' or 'no'\n")
-    
-    return wants_to_play
+    while play_again.lower() not in ['y', 'n']:
+        play_again = input("Please type 'Y' to continue or 'N' to quit\n")
+
+    if play_again.lower() == 'y':
+        return True
+
+def leave_game(wants_to_play):
+    print("'\nThat's too bad. Come back when you want to play again.\nBye!")
+    sys.exit()
     
 def main():
-    print("Hey!\nWelcome to Capital City Challenge!\nAre you ready to play? Yes or No")
-    wants_to_play = check_if_user_wants_to_play()
-    if wants_to_play.lower() == 'no':
-        leave_game(wants_to_play)
-        
-    while wants_to_play.lower() == 'yes':
-        print("\nCool let's play!")
+    print("Hey!\nWelcome to Capital City Challenge!\n")
+    while True:
         #ask user to choose a contient
         continents = ['Africa', 'Asia', 'Europe', 'Americas', 'Oceania']
         continent = input("Choose a continent:\n{}\n".format('\n'.join(continents)))
         # checks if user chose a valid continent
         continent = check_valid_continent(continent, continents)
         print("Cool. You've Chosen {}. Let's see if you know your stuff.".format(continent.capitalize()))
-        print("Psss type 'quit' if you get bored and wat to exit game.\n")
         #gets data from Countries Api and converts it to JSON format
         res = requests.get('https://restcountries.eu/rest/v2/region/{}?fields=name;capital'.format(continent))
         data = res.json()
@@ -89,8 +78,8 @@ def main():
         #prints the score
         score_the_game(correct_answers, total_questions)
         #asks user if they want to play again
-        wants_to_play = play_again()
-    else:
-        leave_game(wants_to_play)
+        if not play_again():
+            leave_game()
+            break
         
 main()
