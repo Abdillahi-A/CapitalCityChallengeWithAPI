@@ -1,29 +1,31 @@
-import requests
+import json
 import sys
 import random
 from fuzzywuzzy import fuzz
 
-def check_valid_continent(continent, continents):
-    while continent.capitalize() not in continents:
-        continent = input("Sorry that is not a valid response. Please choose one of the follwoing continents: \n{}\n\n".format('\n'.join(continents)))
-    return continent
+with open('data.json', 'r') as f:
+  data = json.load(f)
 
-def ask_question(data):
+def check_valid_continent(chosen_continent, data):
+    while chosen_continent.capitalize() not in data.keys():
+        chosen_continent = input("\nSorry that is not a valid response. Please choose one of the follwoing continents: \n{}\n\n".format('\n'.join(data.keys())))
+    return chosen_continent.capitalize()
+
+def ask_question(data, chosen_continent):
     correct_answers = 0
-    total_questions = len(data)
-    random.shuffle(data)
+    total_questions = len(data[chosen_continent])
+    random.shuffle(data[chosen_continent])
        
-    for item in data:
-        if len(item['capital'])>1:
-            answer = input('What is the capital city of {}\n'.format(item['name']))
-            if fuzz.ratio(answer.lower(), item['capital'].lower()) != 100 and fuzz.ratio(answer.lower(), item['capital'].lower())> 90:
-                print(f"Hmmm I'll give you this one, but the correct spelling is {item['capital']}.\n")
-                correct_answers += 1
-            elif fuzz.ratio(answer.lower(), item['capital'].lower())> 90:
-                print("Well done! That is correct.\n")
-                correct_answers += 1
-            else:
-                print("Sorry, the correct answer is {}\n".format(item['capital']))
+    for i in data[chosen_continent]:
+        answer = input('What is the capital city of {}\n'.format(i['Country']))
+        if answer.lower() == i['Capital'].lower():
+            print("Well done! That is correct.\n")
+            correct_answers += 1
+        elif fuzz.ratio(answer.lower(), i['Capital'].lower()) != 100 and fuzz.ratio(answer.lower(), i['Capital'].lower())> 90:
+            print(f"Hmmm I'll give you this one, but the correct spelling is {i['Capital']}.\n")
+            correct_answers += 1
+        else:
+            print(f"Sorry, the correct answer is {i['Capital']}\n")
     
     return correct_answers, total_questions
         
@@ -57,24 +59,20 @@ def play_again():
     if play_again.lower() == 'y':
         return True
 
-def leave_game(wants_to_play):
-    print("'\nThat's too bad. Come back when you want to play again.\nBye!")
+def leave_game():
+    print("\nThat's too bad. Come back when you want to play again. Bye!\n")
     sys.exit()
     
 def main():
-    print("Hey!\nWelcome to Capital City Challenge!\n")
+    print("""\n~~~~~~~~~~~~~~~~~~~~~~~ Capital City Challenge ~~~~~~~~~~~~~~~~~~~~~~~\n""")
     while True:
         #ask user to choose a contient
-        continents = ['Africa', 'Asia', 'Europe', 'Americas', 'Oceania']
-        continent = input("Choose a continent:\n{}\n".format('\n'.join(continents)))
-        # checks if user chose a valid continent
-        continent = check_valid_continent(continent, continents)
-        print("Cool. You've Chosen {}. Let's see if you know your stuff.".format(continent.capitalize()))
-        #gets data from Countries Api and converts it to JSON format
-        res = requests.get('https://restcountries.eu/rest/v2/region/{}?fields=name;capital'.format(continent))
-        data = res.json()
-        #asks the user questions and keeps track of score
-        correct_answers, total_questions = ask_question(data)
+        chosen_continent = input("Choose a chosen_continent:\n{}\n\n".format('\n'.join(data.keys()))).capitalize()
+        # checks if user chose a valid chosen_continent
+        chosen_continent = check_valid_continent(chosen_continent, data)
+        print(f"Cool. You've Chosen {chosen_continent.capitalize()}. Let's see if you know your stuff.\n")
+        # asks the user questions and keeps track of score
+        correct_answers, total_questions = ask_question(data, chosen_continent)
         #prints the score
         score_the_game(correct_answers, total_questions)
         #asks user if they want to play again
