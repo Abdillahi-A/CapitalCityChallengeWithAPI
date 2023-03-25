@@ -8,7 +8,7 @@ In 2018 I started self-learning Python. I enrolled onto various courses on Udemy
 
 ## Notes:
 
-This initial proejct used the requests library to pull in data on cities from a RESTAPI instead of hardcoding data. However, after revisiting the roject in 2023 I realsied that API was no longer free. Thus, my code was broken. As such, I recently recoded it using a different API, but this time hardcoding the data from the API into my own dataset.
+This initial proejct used the requests library to pull in data on cities from a RESTAPI instead of hardcoding data. However, after revisiting the project in 2023 I realised that API was no longer free. Thus, my code was broken. As such, I recently re-factored it using a different API, but this time hardcoding the data from the API into my own dataset. The continents.py file does this hardcoding and has already been run for you, with the outputs being placed in the data.json file.
 
 ## Requirements:
 `pip install fuzzywuzzy`
